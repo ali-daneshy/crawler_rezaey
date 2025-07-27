@@ -14,7 +14,7 @@ DB_PASSWORD = os.getenv('DB_PASSWORD', '12345678')
 DB_PORT = os.getenv('DB_PORT', '3306')
 DB_NAME = os.getenv('DB_NAME', 'products_db')
 
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
@@ -29,7 +29,7 @@ class Product(Base):
     __tablename__ = "products"
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    image_url = Column(String(1024), unique=True, index=True)
+    image_url = Column(Text)
     link_of_product = Column(Text)
     title = Column(Text)
     real_price = Column(Integer)
