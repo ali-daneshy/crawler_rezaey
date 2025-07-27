@@ -1,0 +1,67 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: products_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: products_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - crawler_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p12345678"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: products_api
+    ports:
+      - "4500:4500"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=12345678
+      - DB_NAME=products_db
+    networks:
+      - crawler_network
+    restart: unless-stopped
+
+  # Crawler Service
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile.main
+    container_name: products_crawler
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=12345678
+      - DB_NAME=products_db
+    networks:
+      - crawler_network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  crawler_network:
+    driver: bridge

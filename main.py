@@ -54,7 +54,7 @@ def safe_scroll_page(page):
 
 
 def run(playwright: Playwright) -> None:
-    browser = playwright.firefox.launch(headless=False)
+    browser = playwright.firefox.launch(headless=True)
     context = browser.new_context()
     page = context.new_page()
     with open('links.txt' , 'r') as f :

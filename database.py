@@ -5,8 +5,16 @@ import os
 
 # SQLite connection string for local debugging (no Docker)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+import os
+
 # MySQL connection string
-DATABASE_URL = "mysql+pymysql://root:12345678@localhost:3306/products_db"
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_USER = os.getenv('DB_USER', 'root')
+DB_PASSWORD = os.getenv('DB_PASSWORD', '12345678')
+DB_PORT = os.getenv('DB_PORT', '3306')
+DB_NAME = os.getenv('DB_NAME', 'products_db')
+
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
