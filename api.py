@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import uvicorn
 
 app = FastAPI(title="Products API", description="API for retrieving products from MySQL database")
@@ -37,7 +37,7 @@ def get_db_connection():
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"message": "Products API is running", "endpoints": ["/products"]}
+    return {"message": "Products API is running", "endpoints": ["/products", "/products/paginated"]}
 
 @app.get("/products", response_model=List[Dict[str, Any]])
 async def get_all_products():
@@ -54,6 +54,54 @@ async def get_all_products():
         connection.close()
         
         return products
+        
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+@app.get("/products/paginated")
+async def get_products_paginated(
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
+    page_size: int = Query(20, ge=1, le=100, description="Number of items per page (max 100)")
+):
+    """Get products with pagination"""
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        
+        # Calculate offset
+        offset = (page - 1) * page_size
+        
+        # Get total count of products
+        cursor.execute("SELECT COUNT(*) as total FROM products")
+        total_count = cursor.fetchone()['total']
+        
+        # Get paginated products
+        cursor.execute("SELECT * FROM products LIMIT %s OFFSET %s", (page_size, offset))
+        products = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        # Calculate pagination metadata
+        total_pages = (total_count + page_size - 1) // page_size
+        has_next = page < total_pages
+        has_previous = page > 1
+        
+        return {
+            "data": products,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_items": total_count,
+                "total_pages": total_pages,
+                "has_next": has_next,
+                "has_previous": has_previous,
+                "next_page": page + 1 if has_next else None,
+                "previous_page": page - 1 if has_previous else None
+            }
+        }
         
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")

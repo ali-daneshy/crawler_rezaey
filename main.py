@@ -105,7 +105,7 @@ def run(playwright: Playwright) -> None:
                             real_price = int(float(s))
                         if discounted_price is not None and real_price is not None and real_price != 0:
                             discount_percentage = int(100 - ((discounted_price / real_price) * 100))
-                            if (discount_percentage > 30) and real_price and real_price > 100:
+                            if (discount_percentage > 40) and real_price and real_price > 150:
                                 print(f'{title} - {discount_percentage}%')
                                 # Save to MySQL database
                                 try:
@@ -174,7 +174,7 @@ def run(playwright: Playwright) -> None:
                             continue
                             
                         if discounted_price is not None and real_price is not None and real_price != 0:
-                            if (discount_percentage > 30) and real_price and real_price > 100:
+                            if (discount_percentage > 40 ) and real_price and real_price > 150:
                                 print(f'{title} - {discount_percentage}%')
                                 # Save to MySQL database
                                 try:
@@ -250,7 +250,7 @@ def run(playwright: Playwright) -> None:
                             continue
                             
                         if discounted_price is not None and real_price is not None and real_price != 0:
-                            if (discount_percentage > 30) and real_price and real_price > 100:
+                            if (discount_percentage > 40) and real_price and real_price > 150:
                                 print(f'{title} - {discount_percentage}%')
                                 # Save to MySQL database
                                 try:
